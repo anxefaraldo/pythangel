@@ -8,6 +8,9 @@ standard. It expects that the Ground-Truth is contained within
 the filename.
 
 Ángel Faraldo, March 2015.
+
+TODO: find a way to avoid computing bins that are not taken into account.
+
 """
 
 # IO
@@ -32,20 +35,19 @@ except:
 import os
 import essentia as e
 import essentia.standard as estd
-# import numpy as np
-from random import sample
 from keymods.keytools import *
+from random import sample
 from time import time as tiempo
 
 
 # WHAT TO ANALYSE
 # ===============
-# comma separated list: {'KF100', KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60'}
-collection = ['GSANG', 'ENDO100', 'DJTECHTOOLS60']
+# comma separated list: {'KF100', 'KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60'}
+collection = ['KF100', 'KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60']
 # comma separated list: {'edm', 'non-edm'}
 genre = ['edm']
 # comma separated list: {'major', 'minor'}
-modality = ['major', 'minor']
+modality = ['minor', 'major']
 # Limit the analysis to n RANDOM songs. 0 analyses all the collection:
 limit_analysis = 0
 
@@ -57,6 +59,7 @@ avoid_edges = 10 # % of duration at the beginning and end that is not analysed.
 shift_spectrum = True
 spectral_whitening = True
 verbose = True
+confusion_matrix = True
 results_to_file = True
 
 # global
@@ -73,21 +76,22 @@ max_peaks = 60
 
 # hpcp
 band_preset = False
-split_frequency = 250 # only used with band_preset=True
+split_frequency = 250   # if band_preset == True
 harmonics = 4
 non_linear = True
 normalize = True
 reference_frequency = 440
 hpcp_size = 36
-weight_type = "squaredCosine" # {none, cosine or squaredCosine}
-weight_window_size = 1 # semitones
+weight_type = "squaredCosine"   # {none, cosine or squaredCosine}
+weight_window_size = 1          # semitones
 
 # key detector
-num_harmonics = 4
-profile_type = 'shaath'
-slope = 0.6 # doesn't seem to make any difference!
+profile_type = 'faraldo'
+use_three_chords = False # BEWARE: False executes the extra code including all triads!
 use_polyphony = False
-use_three_chords = False
+num_harmonics = 15  # if use_polyphony == True
+slope = 0.6         # if use_polyphony == True
+
 
 #create directory and unique time identifier
 if results_to_file:
@@ -129,13 +133,14 @@ elif limit_analysis < song_instances:
 # ANALYSIS
 # ========
 
-
 if verbose:
     print "ANALYSING INDIVIDUAL SONGS..."
     print "============================" 
- 
+
+if confusion_matrix: 
+    matrix = 24 * 24 * [0]
+    
 total = []
-matrix = 24 * 24 * [0]
 for item in analysis_files:
     loader = estd.MonoLoader(filename=audio_folder+'/'+item,
     						 sampleRate=sample_rate)
@@ -199,9 +204,10 @@ for item in analysis_files:
     estimation = key_to_list(result)
     score = mirex_score(ground_truth, estimation)
     total.append(score)
-    xpos = (ground_truth[0] + (ground_truth[0] * 24)) + (-1*(ground_truth[1]-1) * 24 * 12)
-    ypos = ((estimation[0] - ground_truth[0]) + (-1 * (estimation[1]-1) * 12))
-    matrix[(xpos+ypos)] =+ matrix[(xpos+ypos)] + 1
+    if confusion_matrix:
+        xpos = (ground_truth[0] + (ground_truth[0] * 24)) + (-1*(ground_truth[1]-1) * 24 * 12)
+        ypos = ((estimation[0] - ground_truth[0]) + (-1 * (estimation[1]-1) * 12))
+        matrix[(xpos+ypos)] =+ matrix[(xpos+ypos)] + 1
     if verbose:
         print result, '(%.2f)' % confidence, '|| SCORE:', score, '\n'
     # and eventually write them to a text file
@@ -210,10 +216,11 @@ for item in analysis_files:
             textfile.write(result)    
     
 print len(total), "files analysed.\n"
-matrix = np.matrix(matrix)
-matrix = matrix.reshape(24,24)
-print matrix
-np.savetxt(temp_folder + '/_confusion_matrix.csv', matrix, fmt='%i', delimiter=',',  header='C,C#,D,Eb,E,F,F#,G,G#,A,Bb,B,Cm,C#m,Dm,Ebm,Em,Fm,F#m,Gm,G#m,Am,Bbm,Bm')
+if confusion_matrix:
+    matrix = np.matrix(matrix)
+    matrix = matrix.reshape(24,24)
+    print matrix
+    np.savetxt(temp_folder + '/_confusion_matrix.csv', matrix, fmt='%i', delimiter=',', header='C,C#,D,Eb,E,F,F#,G,G#,A,Bb,B,Cm,C#m,Dm,Ebm,Em,Fm,F#m,Gm,G#m,Am,Bbm,Bm')
 
 # MIREX RESULTS
 # =============
