@@ -86,6 +86,33 @@ def mirex_score(ground_truth, estimation):
 	return score
 
 
+
+def mirex_evaluation(list_with_weighted_results):
+    "this function expects a list with weighted results according to the mirex standard:\nCorrect Match = 1\nPerfect Fifth = 0.5\n Relative Mode = 0.3\nParallel Mode = 0.2\nOther Errors = 0.0\n and returs a list with the results for each of these categories plus a weigthed score"
+    results = [0,0,0,0,0]
+    l = float(len(list_with_weighted_results))
+    for item in list_with_weighted_results:
+        if   item == 1   : results[0] += 1.0
+        elif item == 0.5 : results[1] += 1.0
+        elif item == 0.3 : results[2] += 1.0
+        elif item == 0.2 : results[3] += 1.0
+        elif item == 0   : results[4] += 1.0
+    correct  = results[0] / l
+    fifth    = results[1] / l
+    relative = results[2] / l
+    parallel = results[3] / l
+    error    = results[4] / l
+    weighted = np.mean(list_with_weighted_results)
+    print "\nCorrect ", correct
+    print "Fifth   ", fifth
+    print "Relative", relative
+    print "Parallel", parallel
+    print "Error   ", error
+    print "Weighted", weighted
+    return [correct, fifth, relative, parallel, error, weighted]
+    
+    
+
 def shift_vector(hpcp, hpcp_size=12):
     "shifts the spectrum to the nearest tempered bin."
     tuning_resolution = hpcp_size / 12

@@ -93,7 +93,7 @@ matrix = 24 * 24 * [0]
 for item in analysis_files:
     result = item[item.find(' == ')+3:item.rfind('.')]
     if result[-1] == 'm':
-        result = result [1:-1] + ' minor'
+        result = result [1:-1] + ' minor'41
     else:
         result = result[1:] + ' major'
     ground_truth = item[item.find(' = ')+3:item.rfind(' < ')]
@@ -122,28 +122,4 @@ np.savetxt(temp_folder + '/_confusion_matrix.csv', matrix, fmt='%i', delimiter='
 
 # MIREX RESULTS
 # =============
-results = [0,0,0,0,0] # 1,0.5,0.3,0.2,0
-for item in total:
-    if   item == 1   : results[0] += 1
-    elif item == 0.5 : results[1] += 1
-    elif item == 0.3 : results[2] += 1
-    elif item == 0.2 : results[3] += 1
-    elif item == 0   : results[4] += 1
-
-l = float(len(total))
-Correct= results[0]/l
-Fifth = results[1]/l
-Relative = results[2]/l
-Parallel = results[3]/l
-Error = results[4]/l
-Weighted_Score = np.mean(total)
-
-print "\nAVERAGE ESTIMATIONS"
-print "==================="
-print "Correct ", Correct 
-print "Fifth   ", Fifth
-print "Relative", Relative 
-print "Parallel", Parallel
-print "Error   ", Error
-print "Weighted", Weighted_Score
-print '\n'
+evaluation_results = mirex_evaluation(total)

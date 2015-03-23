@@ -4,14 +4,69 @@
 """
 This script estimates the key of the songs contained in a folder,
 and performs an evaluation of its results according to the MIREX 
-standard. It expects that the Ground-Truth is contained within
-the filename.
+standard. It expects the ground-truth is contained within
+the filename in the following format:
+
+FORMAT:  'Artist Name - Title of the Song = Key annotation < genre > DATASET.wav'
+EXAMPLE: 'Audio Junkies - Bird On A Wire = F minor < edm > KF1000.wav'
+
+To run this script type:
+"filename.py <route-to-folder-with-audio-and-annotations-in-filename>"
+
+Besides common python libraries, this script depends on a module named
+"keytools" which is provided along this file.
 
 Ángel Faraldo, March 2015.
 
-TODO: find a way to avoid computing bins that are not taken into account.
-
 """
+# WHAT TO ANALYSE
+# ===============
+# ['KF100', 'KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60']
+collection     = ['KF100', 'KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60'] 
+genre          = ['edm'] # ['edm', 'non-edm']
+modality       = ['minor', 'major'] # ['major', 'minor']
+limit_analysis = 0 # Limit analysis to N RANDOM tracks. 0 == all samples matching criteria
+
+# ANALYSIS PARAMETERS
+# ===================
+# ángel:
+avoid_edges          = 0 # % of duration at the beginning and end that is not analysed.
+shift_spectrum       = True
+spectral_whitening   = True
+# print
+verbose              = True
+confusion_matrix     = True
+results_to_file      = True
+confidence_threshold = 1
+# global
+sample_rate          = 44100
+window_size          = 4096
+jump_frames          = 4 # 1 = analyse every frame; 2 = analyse every other frame..
+hop_size             = window_size * jump_frames
+window_type          = 'hann'
+min_frequency        = 25
+max_frequency        = 3500
+# spectral peaks
+magnitude_threshold  = 0.0001
+max_peaks            = 60
+# hpcp
+band_preset          = False
+split_frequency      = 250 # if band_preset == True
+harmonics            = 4
+non_linear           = True
+normalize            = True
+reference_frequency  = 440
+hpcp_size            = 36
+weight_type          = "squaredCosine" # {none, cosine or squaredCosine}
+weight_window_size   = 1 # semitones
+# key detector
+profile_type         = 'shaath'
+use_three_chords     = False # BEWARE: False executes the extra code including all triads!
+use_polyphony        = False
+num_harmonics        = 15  # if use_polyphony == True
+slope                = 0.2 # if use_polyphony == True
+
+# /////////////////////////////////////////////////////////////////////////////////////////
 
 # IO
 # ==
@@ -28,7 +83,6 @@ except:
     print "filename.py route-to-folder-with-audio-and-annotations-in-filename"
     print "-------------------------------"
 
-
 # LOAD MODULES
 # ============
 import os
@@ -38,67 +92,11 @@ from keymods.keytools import *
 from random import sample
 from time import time as tiempo
 
-
-# WHAT TO ANALYSE
-# ===============
-# comma separated list: {'KF100', 'KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60'}
-collection = ['KF100', 'KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60']
-# comma separated list: {'edm', 'non-edm'}
-genre = ['edm']
-# comma separated list: {'major', 'minor'}
-modality = ['minor', 'major']
-# Limit the analysis to n RANDOM songs. 0 analyses all the collection:
-limit_analysis = 0
-
-
-# PARAMETERS
-# ==========
-# ángel:
-avoid_edges = 0 # % of duration at the beginning and end that is not analysed.
-shift_spectrum = False
-spectral_whitening = True
-verbose = True
-confusion_matrix = True
-results_to_file = True
-confidence_print_threshold = 1
-
-# global
-sample_rate = 44100
-window_size = 4096
-hop_size = window_size
-window_type = 'hann'
-min_frequency = 25
-max_frequency = 3500
-
-# spectral peaks
-magnitude_threshold = 0.0001
-max_peaks = 60
-
-# hpcp
-band_preset = False
-split_frequency = 250   # if band_preset == True
-harmonics = 4
-non_linear = True
-normalize = True
-reference_frequency = 440
-hpcp_size = 36
-weight_type = "squaredCosine"   # {none, cosine or squaredCosine}
-weight_window_size = 1          # semitones
-
-# key detector
-profile_type = 'shaath'
-use_three_chords = False # BEWARE: False executes the extra code including all triads!
-use_polyphony = False
-num_harmonics = 15  # if use_polyphony == True
-slope = 0.2        # if use_polyphony == True
-
-
-#create directory and unique time identifier
+# create directory and unique time identifier
 if results_to_file:
     uniqueTime = str(int(tiempo()))
     temp_folder = '/Users/angel/KeyDetection_'+uniqueTime
     os.mkdir(temp_folder)
-
 
 # retrieve filenames according to the desired settings...
 allfiles = os.listdir(audio_folder)
@@ -131,9 +129,9 @@ elif limit_analysis < song_instances:
     analysis_files = sample(analysis_files, limit_analysis)
     print "taking", limit_analysis, "random samples...\n"
 
+
 # ANALYSIS
 # ========
-
 if verbose:
     print "ANALYSING INDIVIDUAL SONGS..."
     print "============================" 
@@ -196,63 +194,49 @@ for item in analysis_files:
     estimation = key(chroma.tolist())
     result = estimation[0] + ' ' + estimation[1]
     confidence = estimation[2]
+    # MIREX EVALUATION:
+    # ================
     ground_truth = item[item.find(' = ')+3:item.rfind(' < ')]
-    if verbose and confidence < confidence_print_threshold:
+    if verbose and confidence < confidence_threshold:
         print item[:item.rfind(' = ')]
         print 'G:', ground_truth, '|| P:',
     ground_truth = key_to_list(ground_truth)
     estimation = key_to_list(result)
     score = mirex_score(ground_truth, estimation)
     total.append(score)
+    # CONFUSION MATRIX:
+    # ================
     if confusion_matrix:
         xpos = (ground_truth[0] + (ground_truth[0] * 24)) + (-1*(ground_truth[1]-1) * 24 * 12)
         ypos = ((estimation[0] - ground_truth[0]) + (-1 * (estimation[1]-1) * 12))
         matrix[(xpos+ypos)] =+ matrix[(xpos+ypos)] + 1
-    if verbose and confidence < confidence_print_threshold:
+    if verbose and confidence < confidence_threshold:
         print result, '(%.2f)' % confidence, '|| SCORE:', score, '\n'
-    # and eventually write them to a text file
+    # WRITE RESULTS TO FILE:
+    # =====================
     if results_to_file:
         with open(temp_folder + '/' + item[:-3]+'txt', 'w') as textfile:
             textfile.write(result)    
+    
     
 print len(total), "files analysed.\n"
 if confusion_matrix:
     matrix = np.matrix(matrix)
     matrix = matrix.reshape(24,24)
     print matrix
-    np.savetxt(temp_folder + '/_confusion_matrix.csv', matrix, fmt='%i', delimiter=',', header='C,C#,D,Eb,E,F,F#,G,G#,A,Bb,B,Cm,C#m,Dm,Ebm,Em,Fm,F#m,Gm,G#m,Am,Bbm,Bm')
+    if results_to_file:
+        np.savetxt(temp_folder + '/_confusion_matrix.csv', matrix, fmt='%i', delimiter=',', header='C,C#,D,Eb,E,F,F#,G,G#,A,Bb,B,Cm,C#m,Dm,Ebm,Em,Fm,F#m,Gm,G#m,Am,Bbm,Bm')
 
 # MIREX RESULTS
 # =============
-results = [0,0,0,0,0] # 1,0.5,0.3,0.2,0
-for item in total:
-    if   item == 1   : results[0] += 1
-    elif item == 0.5 : results[1] += 1
-    elif item == 0.3 : results[2] += 1
-    elif item == 0.2 : results[3] += 1
-    elif item == 0   : results[4] += 1
+evaluation_results = mirex_evaluation(total)
 
-l = float(len(total))
-Correct= results[0]/l
-Fifth = results[1]/l
-Relative = results[2]/l
-Parallel = results[3]/l
-Error = results[4]/l
-Weighted_Score = np.mean(total)
-
-print "\nAVERAGE ESTIMATIONS"
-print "==================="
-print "Weighted", Weighted_Score
-print "Correct ", Correct 
-print "Fifth   ", Fifth
-print "Relative", Relative 
-print "Parallel", Parallel
-print "Error   ", Error
-
+# WRITE INFO TO FILE
+# ==================
 if results_to_file:
     settings = "SETTINGS\n========\nAvoid edges ('%' of duration that is disregarded at the beginning and end (0 = full track)) = "+str(avoid_edges)+"\nshift spectrum to fit tempered scale = "+str(shift_spectrum)+"\nspectral whitening = "+str(spectral_whitening)+"\nsample rate = "+str(sample_rate)+"\nwindow size = "+str(window_size)+"\nhop size = "+str(hop_size)+"\nmagnitude threshold = "+str(magnitude_threshold)+"\nminimum frequency = "+str(min_frequency)+"\nmaximum frequency = "+str(max_frequency)+"\nmaximum peaks = "+str(max_peaks)+"\nband preset = "+str(band_preset)+"\nsplit frequency = "+str(split_frequency)+"\nharmonics = "+str(harmonics)+"\nnon linear = "+str(non_linear)+"\nnormalize = "+str(normalize)+"\nreference frequency = "+str(reference_frequency)+"\nhpcp size = "+str(hpcp_size)+"\nweigth type = "+weight_type+"\nweight window size in semitones = "+str(weight_window_size)+"\nharmonics key = "+str(num_harmonics)+"\nslope = "+str(slope)+"\nprofile = "+profile_type+"\npolyphony = "+str(use_polyphony)+"\nuse three chords = "+str(use_three_chords)
     corpus = "\n\nANALYSYS CORPUS\n===============\n" + str(collection) + '\n' + str(genre) + '\n' + str(modality) + '\n\n' + str(len(total)) + " files analysed.\n"
-    results_for_file = "\n\nEVALUATION RESULTS\n==================\nWeighted "+str(Weighted_Score)+"\nCorrect "+str(Correct)+"\nFifth "+str(Fifth)+"\nRelative "+str(Relative)+"\nParallel "+str(Parallel)+"\nError "+str(Error)
+    results_for_file = "\nEVALUATION RESULTS\n==================\nCorrect: "+str(evaluation_results[0])+"\nFifth:  "+str(evaluation_results[1])+"\nRelative: "+str(evaluation_results[2])+"\nParallel: "+str(evaluation_results[3])+"\nError: "+str(evaluation_results[4])+"Weighted: "+str(evaluation_results[5])
     write_to_file = open(temp_folder + '/_SUMMARY.txt', 'w')
     write_to_file.write(settings)
     write_to_file.write(corpus)
