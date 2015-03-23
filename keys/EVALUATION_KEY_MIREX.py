@@ -25,7 +25,7 @@ from keymods.keytools import *
 
 
 # retrieve folder data
-# =====================
+# ====================
 ground_truth_list = os.listdir(ground_truth_route)
 if '.DS_Store' in ground_truth_list:
     ground_truth_list.remove('.DS_Store')

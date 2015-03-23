@@ -31,6 +31,7 @@ limit_analysis = 0 # Limit analysis to N RANDOM tracks. 0 == all samples matchin
 # ===================
 # ángel:
 avoid_edges          = 0 # % of duration at the beginning and end that is not analysed.
+first_n_secs         = 0 # only analyse the first N seconds of each track
 shift_spectrum       = True
 spectral_whitening   = True
 # print
@@ -41,7 +42,7 @@ confidence_threshold = 1
 # global
 sample_rate          = 44100
 window_size          = 4096
-jump_frames          = 4 # 1 = analyse every frame; 2 = analyse every other frame..
+jump_frames          = 4 # 1 = analyse every frame; 2 = analyse every other frame; etc.
 hop_size             = window_size * jump_frames
 window_type          = 'hann'
 min_frequency        = 25
@@ -60,7 +61,7 @@ hpcp_size            = 36
 weight_type          = "squaredCosine" # {none, cosine or squaredCosine}
 weight_window_size   = 1 # semitones
 # key detector
-profile_type         = 'shaath'
+profile_type         = 'onlyminor'
 use_three_chords     = False # BEWARE: False executes the extra code including all triads!
 use_polyphony        = False
 num_harmonics        = 15  # if use_polyphony == True
@@ -141,6 +142,8 @@ if confusion_matrix:
     
 total = []
 for item in analysis_files:
+    # INSTANTIATE ESSENTIA ALGORITHMS
+    # ===============================
     loader = estd.MonoLoader(filename=audio_folder+'/'+item,
     						 sampleRate=sample_rate)
     cut    = estd.FrameCutter(frameSize=window_size, 
@@ -173,8 +176,14 @@ for item in analysis_files:
                       slope=slope, 
                       usePolyphony=use_polyphony, 
                       useThreeChords=use_three_chords)
+    # ACTUAL ANALYSIS
+    # ===============
     audio = loader()
     duration = len(audio)
+    if first_n_secs > 0:
+        if duration > (first_n_secs * sample_rate):
+            audio = audio[:first_n_secs * sample_rate]
+            duration = len(audio)    
     if avoid_edges > 0:
         initial_sample = (avoid_edges * duration) / 100
         final_sample = duration - initial_sample

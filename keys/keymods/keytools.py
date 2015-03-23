@@ -114,7 +114,7 @@ def mirex_evaluation(list_with_weighted_results):
     
 
 def shift_vector(hpcp, hpcp_size=12):
-    "shifts the spectrum to the nearest tempered bin."
+    "shifts the spectrum to the nearest tempered bin"
     tuning_resolution = hpcp_size / 12
     max_val = np.max(hpcp)
     if max_val <= 0:
