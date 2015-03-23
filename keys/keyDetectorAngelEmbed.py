@@ -22,11 +22,10 @@ try:
 except:
     audio_folder = "/Users/angel/GoogleDrive/EDM/EDM_Collections/KEDM_mono_wav"
     print "-------------------------------"
-    print "Analysis folder NOT provided."
-    print "Analysing contents in:"
+    print "Analysis folder NOT provided. Analysing contents in:"
     print audio_folder
     print "If you want to analyse a different folder you should type:"
-    print "filename.py <route to folder with audio and annotations in filename>"
+    print "filename.py route-to-folder-with-audio-and-annotations-in-filename"
     print "-------------------------------"
 
 
@@ -55,12 +54,13 @@ limit_analysis = 0
 # PARAMETERS
 # ==========
 # ángel:
-avoid_edges = 10 # % of duration at the beginning and end that is not analysed.
-shift_spectrum = True
+avoid_edges = 0 # % of duration at the beginning and end that is not analysed.
+shift_spectrum = False
 spectral_whitening = True
 verbose = True
 confusion_matrix = True
 results_to_file = True
+confidence_print_threshold = 1
 
 # global
 sample_rate = 44100
@@ -86,11 +86,11 @@ weight_type = "squaredCosine"   # {none, cosine or squaredCosine}
 weight_window_size = 1          # semitones
 
 # key detector
-profile_type = 'faraldo'
+profile_type = 'shaath'
 use_three_chords = False # BEWARE: False executes the extra code including all triads!
 use_polyphony = False
 num_harmonics = 15  # if use_polyphony == True
-slope = 0.6         # if use_polyphony == True
+slope = 0.2        # if use_polyphony == True
 
 
 #create directory and unique time identifier
@@ -98,6 +98,7 @@ if results_to_file:
     uniqueTime = str(int(tiempo()))
     temp_folder = '/Users/angel/KeyDetection_'+uniqueTime
     os.mkdir(temp_folder)
+
 
 # retrieve filenames according to the desired settings...
 allfiles = os.listdir(audio_folder)
@@ -176,6 +177,11 @@ for item in analysis_files:
                       useThreeChords=use_three_chords)
     audio = loader()
     duration = len(audio)
+    if avoid_edges > 0:
+        initial_sample = (avoid_edges * duration) / 100
+        final_sample = duration - initial_sample
+        audio = audio[initial_sample:final_sample]
+        duration = len(audio)
     number_of_frames = duration / hop_size
     chroma = []
     for bang in range(number_of_frames):
@@ -184,12 +190,6 @@ for item in analysis_files:
         if spectral_whitening:
             p2 = sw(spek, p1, p2)
         chroma.append(hpcp(p1,p2))
-    initial_frame = 0
-    if avoid_edges > 0:
-        initial_sample = (avoid_edges * duration) / 100
-        initial_frame = initial_sample / hop_size
-        number_of_frames = (duration - initial_sample) / hop_size
-    chroma = chroma[int(initial_frame):int(number_of_frames)]
     chroma = np.mean(chroma, axis=0)
     if shift_spectrum:
         chroma = shift_vector(chroma, hpcp_size)
@@ -197,7 +197,7 @@ for item in analysis_files:
     result = estimation[0] + ' ' + estimation[1]
     confidence = estimation[2]
     ground_truth = item[item.find(' = ')+3:item.rfind(' < ')]
-    if verbose:
+    if verbose and confidence < confidence_print_threshold:
         print item[:item.rfind(' = ')]
         print 'G:', ground_truth, '|| P:',
     ground_truth = key_to_list(ground_truth)
@@ -208,7 +208,7 @@ for item in analysis_files:
         xpos = (ground_truth[0] + (ground_truth[0] * 24)) + (-1*(ground_truth[1]-1) * 24 * 12)
         ypos = ((estimation[0] - ground_truth[0]) + (-1 * (estimation[1]-1) * 12))
         matrix[(xpos+ypos)] =+ matrix[(xpos+ypos)] + 1
-    if verbose:
+    if verbose and confidence < confidence_print_threshold:
         print result, '(%.2f)' % confidence, '|| SCORE:', score, '\n'
     # and eventually write them to a text file
     if results_to_file:
@@ -248,7 +248,6 @@ print "Fifth   ", Fifth
 print "Relative", Relative 
 print "Parallel", Parallel
 print "Error   ", Error
-print '\n'
 
 if results_to_file:
     settings = "SETTINGS\n========\nAvoid edges ('%' of duration that is disregarded at the beginning and end (0 = full track)) = "+str(avoid_edges)+"\nshift spectrum to fit tempered scale = "+str(shift_spectrum)+"\nspectral whitening = "+str(spectral_whitening)+"\nsample rate = "+str(sample_rate)+"\nwindow size = "+str(window_size)+"\nhop size = "+str(hop_size)+"\nmagnitude threshold = "+str(magnitude_threshold)+"\nminimum frequency = "+str(min_frequency)+"\nmaximum frequency = "+str(max_frequency)+"\nmaximum peaks = "+str(max_peaks)+"\nband preset = "+str(band_preset)+"\nsplit frequency = "+str(split_frequency)+"\nharmonics = "+str(harmonics)+"\nnon linear = "+str(non_linear)+"\nnormalize = "+str(normalize)+"\nreference frequency = "+str(reference_frequency)+"\nhpcp size = "+str(hpcp_size)+"\nweigth type = "+weight_type+"\nweight window size in semitones = "+str(weight_window_size)+"\nharmonics key = "+str(num_harmonics)+"\nslope = "+str(slope)+"\nprofile = "+profile_type+"\npolyphony = "+str(use_polyphony)+"\nuse three chords = "+str(use_three_chords)
