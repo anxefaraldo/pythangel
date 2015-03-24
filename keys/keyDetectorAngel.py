@@ -1,20 +1,16 @@
 #!/usr/local/bin/python
 # -*- coding: UTF-8 -*-
 
-"""
-This script estimates the key of the songs contained in a folder,
+"""This script estimates the key of the songs contained in a folder,
 and performs an evaluation of its results according to the MIREX 
 standard. 
-
-There are two modes of operation: 'txt' and 'title'. 
-
+There are two modes of operation: 'txt' and 'title'.
 In 'txt mode, the program expects a first argument indicating the route
 to a folder containing the audio to be analysed, and a second argument
 containing the route to the ground truth annotation as individual text
 files. The program expects that the file names of both the audio and the
 annotations are equal (except for the extension), and if the name do not 
 match it will skip the evaluation for that file.
-
 In 'title' mode, the program looks for the ground-truth annotation embedded
 in the name of the audio file itself, according to the following format:
 
@@ -24,16 +20,14 @@ EXAMPLE: 'Audio Junkies - Bird On A Wire = F minor < edm > KF1000.wav'
 Besides common python libraries, this script depends on a module named
 "keytools" which is provided along this file.
 
-Ángel Faraldo, March 2015.
-
-"""
+                                              Ángel Faraldo, March 2015."""
 
 # WHAT TO ANALYSE
 # ===============
-analysis_mode = 'txt' # {'txt', 'title'}
+analysis_mode = 'title' # {'txt', 'title'}
 
 if analysis_mode == 'title':
-    collection     = ['GSANG'] #['KF100', 'KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60'] 
+    collection     = ['KF100','KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60'] # ['KF100', 'KF1000', 'GSANG', 'ENDO100', 'DJTECHTOOLS60'] 
     genre          = ['edm'] # ['edm', 'non-edm']
     modality       = ['minor', 'major'] # ['major', 'minor']
     limit_analysis = 0 # Limit analysis to N random tracks. 0 = all samples matching above criteria.
@@ -72,7 +66,7 @@ hpcp_size            = 36
 weight_type          = "squaredCosine" # {none, cosine or squaredCosine}
 weight_window_size   = 1 # semitones
 # key detector:
-profile_type         = 'onlyminor'
+profile_type         = 'edm_dataset'
 use_three_chords     = False # BEWARE: False executes the extra code including all triads!
 use_polyphony        = False
 num_harmonics        = 15  # when use_polyphony == True
@@ -105,7 +99,7 @@ elif analysis_mode == 'title':
         print "-------------------------------"
 else:
     print "Unrecognised analysis mode. It should be either 'txt' or 'title'."
-    sys.exit()        
+    sys.exit()
 
 # LOAD MODULES
 # ============
@@ -119,7 +113,8 @@ from time import time as tiempo
 # create directory to write the results with an unique time id:
 if results_to_file:
     uniqueTime = str(int(tiempo()))
-    temp_folder = '/Users/angel/KeyDetection_'+uniqueTime
+    wd = os.getcwd()
+    temp_folder = wd + '/KeyDetection_'+uniqueTime
     os.mkdir(temp_folder)
 
 # retrieve files and filenames according to the desired settings:
@@ -142,7 +137,7 @@ if analysis_mode == 'title':
         pass
     elif limit_analysis < song_instances:
         analysis_files = sample(analysis_files, limit_analysis)
-    print "taking", limit_analysis, "random samples...\n"
+        print "taking", limit_analysis, "random samples...\n"
 else:
     analysis_files = os.listdir(audio_folder)
     if '.DS_Store' in analysis_files: 
