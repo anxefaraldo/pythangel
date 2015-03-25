@@ -66,7 +66,7 @@ hpcp_size            = 36
 weight_type          = "squaredCosine" # {none, cosine or squaredCosine}
 weight_window_size   = 1 # semitones
 # key detector:
-profile_type         = 'edm_dataset'
+profile_type         = 'onlyminor'
 use_three_chords     = False # BEWARE: False executes the extra code including all triads!
 use_polyphony        = False
 num_harmonics        = 15  # when use_polyphony == True

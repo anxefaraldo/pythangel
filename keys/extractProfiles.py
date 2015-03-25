@@ -182,7 +182,7 @@ for item in analysis_files:
 
 
 
-hpcp_mean = np.median(song_chromas, axis=0) # mean or median??
+hpcp_mean = np.mean(song_chromas, axis=0) # mean or median??
 print "hpcp_mean:", hpcp_mean
 hpcp_std = np.std(song_chromas, axis=0) # mean or median??
 print "hpcp_std:", hpcp_std
