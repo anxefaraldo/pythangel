@@ -9,7 +9,7 @@ try:
     audio_folder = sys.argv[1]
     folder = sys.argv[2]
 except:
-    print "\nUSAGE: name_of_this_script.py <route to annotations with audio> <route to estimations>\n"
+    print "\nUSAGE: name_of_this_script.py <route to audio> <route to multi-estimations>\n"
     sys.exit()
 
 sample_rate = 44100.00
@@ -41,11 +41,11 @@ class2key = {0:'C major',
 			  24: 'unknown'}
 
 estimations = os.listdir(folder)
-if '.DS_Store' in estimations: 
+if '.DS_Store' in estimations:
     estimations.remove('.DS_Store')
 
 soundfiles = os.listdir(audio_folder)
-if '.DS_Store' in soundfiles: 
+if '.DS_Store' in soundfiles:
     soundfiles.remove('.DS_Store')
 
 for i in range(len(estimations)):

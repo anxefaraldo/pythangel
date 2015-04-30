@@ -33,7 +33,7 @@ name2class = {'B#':0,'C':0,
               'A':9,
               'A#':10,'Bb':10,
               'B':11,'Cb':11}
-            
+
 mode2num = {'minor':0, 'min':0, 'aeolian': 0, 'dorian': 0, 'dor': 0, 'modal': 1, 'mixolydian': 1, 'major':1, 'maj':1, 'mix':1, 'lyd': 1, 'None': 1}
 
 
@@ -41,7 +41,7 @@ mode2num = {'minor':0, 'min':0, 'aeolian': 0, 'dorian': 0, 'dor': 0, 'modal': 1,
 def name_to_class(key):
     "converts a pitch name into its pitch-class value (c=0,...,b=11)"
     return name2class[key]
-    
+
 def mode_to_num(mode):
     "converts a chord type into an arbitrary numeric value (maj = 1, min = 0)"
     return mode2num[mode]
@@ -56,9 +56,9 @@ if '.DS_Store' in P:
 
 #run the evaluation algorithm
 print "\n...EVALUATING..."
-if verbose: 
-    print "\nresults for individual songs:" 
-    print "-----------------------------" 
+if verbose:
+    print "\nresults for individual songs:"
+    print "-----------------------------"
 
 total = []
 for i in range(len(GT)):
@@ -89,7 +89,7 @@ for i in range(len(GT)):
     total.append(score)
     GTS.close()
 
-#create results    
+#create results
 results = [0,0,0,0,0] # 1,0.5,0.3,0.2,0
 for item in total:
     if item == 1     : results[0] += 1
@@ -97,7 +97,7 @@ for item in total:
     elif item == 0.3 : results[2] += 1
     elif item == 0.2 : results[3] += 1
     elif item == 0   : results[4] += 1
-    
+
 l = float(len(total))
 Weighted_Score = np.mean(total)
 Correct= results[0]/l
@@ -108,13 +108,12 @@ Error = results[4]/l
 
 print "\n\nAVERAGE ESTIMATIONS"
 print "==================="
-print "Weighted", Weighted_Score
-print "Correct ", Correct 
+print "Correct ", Correct
 print "Fifth   ", Fifth
-print "Relative", Relative 
+print "Relative", Relative
 print "Parallel", Parallel
 print "Error   ", Error
-
+print "Weighted", Weighted_Score
 results_for_file = "Weighted "+str(Weighted_Score)+"\nCorrect "+str(Correct)+"\nFifth "+str(Fifth)+"\nRelative "+str(Relative)+"\nParallel "+str(Parallel)+"\nError "+str(Error)
 writeResults = open(folder_P+'/_EvaluationResults.txt', 'w')
 writeResults.write(results_for_file)

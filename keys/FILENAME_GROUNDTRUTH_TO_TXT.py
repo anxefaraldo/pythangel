@@ -1,15 +1,6 @@
 #!/usr/local/bin/python
 # -*- coding: UTF-8 -*-
 
-"""
-This script estimates the key of the songs contained in a folder,
-and performs an evaluation of its results according to the MIREX 
-standard. It expects that the Ground-Truth is contained within
-the filename.
-
-Ángel Faraldo, March 2015.
-"""
-
 # IO
 # ==
 import sys
@@ -32,9 +23,9 @@ except:
 import os
 
 allfiles = os.listdir(audio_folder)
-if '.DS_Store' in allfiles: 
+if '.DS_Store' in allfiles:
     allfiles.remove('.DS_Store')
 for item in allfiles:
     ground_truth = item[item.find(' = ')+3:item.rfind(' < ')]
-    with open(audio_folder + '/' + item[:-3]+'txt', 'w') as textfile:
+    with open(audio_folder + '/' + item[:-4]+'txt', 'w') as textfile:
         textfile.write(ground_truth)

@@ -93,7 +93,7 @@ matrix = 24 * 24 * [0]
 for item in analysis_files:
     result = item[item.find(' == ')+3:item.rfind('.')]
     if result[-1] == 'm':
-        result = result [1:-1] + ' minor'41
+        result = result [1:-1] + ' minor'
     else:
         result = result[1:] + ' major'
     ground_truth = item[item.find(' = ')+3:item.rfind(' < ')]
