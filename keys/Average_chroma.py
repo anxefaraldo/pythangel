@@ -6,25 +6,41 @@ import essentia.standard as estd
 
 # PARAMETERS
 #global
-sample_rate = 44100
-window_size = 4096
-window_type = 'hann' #{hamming, hann, triangular, square, blackmanharris62, blackmanharris70, blackmanharris74, blackmanharris92}
-hop_size = 1024
-min_frequency = 25
-max_frequency = 3500
-#spectral_peaks
-magnitude_threshold = 0.0001
-max_peaks = 60
-#hpcp
-band_preset = False
-split_frequency = 500 # only used with band_preset=True
-harmonics = 0
-non_linear = False
-normalize = True
-reference_frequency = 440
-size = 12
-weight_type = "squaredCosine" # none, cosine or squaredCosine
-weight_window_size = 1.3 # in semitones
+
+# faraldo:
+avoid_edges          = 0 # % of duration at the beginning and end that is not analysed.
+first_n_secs         = 0 # only analyse the first N seconds of each track
+skip_first_minute    = False
+spectral_whitening   = True
+shift_spectrum       = True
+
+# print and verbose:
+verbose              = True
+confusion_matrix     = True
+results_to_file      = True
+results_to_csv       = True
+confidence_threshold = 1
+# global:
+sample_rate          = 44100
+window_size          = 4096
+jump_frames          = 1 # 1 = analyse every frame; 2 = analyse every other frame; etc.
+hop_size             = window_size * jump_frames
+window_type          = 'hann'
+min_frequency        = 25
+max_frequency        = 3500
+# spectral peaks:
+magnitude_threshold  = 0.0001
+max_peaks            = 60
+# hpcp:
+band_preset          = False
+split_frequency      = 250 # if band_preset == True
+harmonics            = 4
+non_linear           = True
+normalize            = True
+reference_frequency  = 440
+hpcp_size            = 12
+weight_type          = "squaredCosine" # {none, cosine or squaredCosine}
+weight_window_size   = 1 # semitones
 
 folder = '/Users/angel/Desktop/'
 song = folder + 'brownNoise.wav'
