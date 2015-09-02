@@ -5,7 +5,7 @@ import sys,os
 import scipy.io.wavfile as wav
 import numpy as np
 
-replace_original = False
+replace_original = True
 
 try:
     infolder = sys.argv[1]

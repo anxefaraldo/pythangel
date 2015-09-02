@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+import numpy as np
+import os
+from paulstretch_stereo import *
+
+try:
+    folder = sys.argv[1]
+    os.chdir(folder)
+    tracks = os.listdir(folder)
+    durations = []
+    for track in tracks:
+        if '.wav' in track:
+             print 'OBTAINING', track
+             dur = length_wav(track)
+             durations.append(dur)
+
+    final_duration = np.max(durations) * 2
+
+    for track in tracks:
+        if '.wav' in track:
+            outfilename = 'STRETCHED_' + track
+            (samplerate, smp, trackdur) = load_wav(track)
+            print 'duration:', trackdur
+            stretch = final_duration / float(trackdur)
+            print outfilename, STRETCH
+            paulstretch(samplerate, smp, stretch, 0.5, outfilename)
+
+    print 'Done!'
+
+except IndexError:
+    print "usage: script.py 'path-to-files'"
