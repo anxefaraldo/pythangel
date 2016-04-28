@@ -15,16 +15,16 @@ try:
              dur = length_wav(track)
              durations.append(dur)
 
-    final_duration = np.max(durations) * 2
+    final_duration = 400# np.max(durations) * 2
 
     for track in tracks:
         if '.wav' in track:
             outfilename = 'STRETCHED_' + track
             (samplerate, smp, trackdur) = load_wav(track)
             print 'duration:', trackdur
-            stretch = final_duration / float(trackdur)
-            print outfilename, STRETCH
-            paulstretch(samplerate, smp, stretch, 0.5, outfilename)
+            stretch_factor = final_duration / float(trackdur)
+            print outfilename, stretch_factor
+            paulstretch(samplerate, smp, stretch_factor, 0.5, outfilename)
 
     print 'Done!'
 

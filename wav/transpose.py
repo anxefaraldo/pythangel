@@ -30,7 +30,7 @@ try:
             else:
                 label = (key_indicator - 1) / 2
             """
-            semitones = 1 # should be made interactive!!!!
+            semitones = 12 # should be made interactive!!!!
             print '\n', track
             # print 'Label:', label
             print 'Sample Rate:', sr

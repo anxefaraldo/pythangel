@@ -28,7 +28,7 @@ def load_wav(filename):
         wavedata=scipy.io.wavfile.read(filename)
         samplerate=int(wavedata[0])
         trackdur = len(wavedata[1])/float(samplerate)
-        smp=wavedata[1]*(1.0/8388608.0) # N bit/2 = 32768
+        smp=wavedata[1]*(1.0/32768) # N bit/2 = 32768
         smp=smp.transpose()
 
 
