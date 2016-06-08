@@ -3,11 +3,11 @@ import os.path
 import essentia.standard as estd
 
 
-def extract_onsets(audio_file, window_size=2048, hop_size=512, write_to_file=False):
+def extract_onsets(audio_file, write_to_file=False):
     loader = estd.MonoLoader(filename=audio_file)
-    # onset_detector = estd.OnsetRate()
-    onset_detector = estd.SuperFluxExtractor()  # TODO Ask martin and Dmitri why only gives first 24 secs
-    onsets = list(onset_detector(loader()))
+    high_pass = estd.HighPass(cutoffFrequency=400)
+    onset_detector = estd.SuperFluxExtractor()
+    onsets = list(onset_detector(high_pass(loader())))
     if write_to_file:
         f = open(audio_file + '.onsets', 'w')
         for item in onsets:
@@ -15,32 +15,6 @@ def extract_onsets(audio_file, window_size=2048, hop_size=512, write_to_file=Fal
         f.close()
     return onsets
 
-"""
-def extract_onsets(audio_file, window_size=2048, hop_size=512, write_to_file=False):
-    loader = estd.MonoLoader(filename=audio_file)
-    cutter = estd.FrameCutter(frameSize=window_size,
-                              hopSize=hop_size)
-    spectrum = estd.Spectrum(size=window_size)
-    onset_detector = estd.OnsetDetection()
-    phases = [0] * window_size
-    # onset_detector = estd.SuperFluxExtractor() TODO Ask martin and Dmitri why only gives first 24 secs
-    sig = loader()
-    n_frames = len(sig) / hop_size
-    print n_frames
-    onsets = []
-    for i in range(n_frames):
-        print i
-        ons = onset_detector(spectrum(cutter(sig)), phases)
-        # print ons
-        onsets.append(ons)
-    #if write_to_file:
-    #    f = open(audio_file + '.onsets', 'w')
-    #    for item in onsets:
-    #        f.write(str(item) + '\n')
-    #    f.close()
-    #print onsets
-    return onsets
-"""
 
 def extract_beat_positions(audio_file, write_to_file=False):
     loader = estd.MonoLoader(filename=audio_file)
