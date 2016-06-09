@@ -118,7 +118,7 @@ def compute_spectral_descriptors(audio_file):
 def batch_analysis(directory):
     list_files = os.listdir(directory)
     for item in list_files:
-        if any(soundfile_type in item for soundfile_type in AUDIO_FILE_TYPES):
+        if any(soundfile_type in item for soundfile_type in AUDIO_FILE_TYdPES):
             item = directory + '/' + item
             print '\n', item
             try:
