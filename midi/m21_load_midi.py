@@ -12,53 +12,43 @@ def load_midi_corpus(midi_corpus_location='/home/angel/Git/house-harmonic-filler
     return midi_corpus_list
 
 
-
 def load_midfile(file_id, midi_corpus_list=load_midi_corpus()):
-    file_id = file_id % len(midi_corpus_list)
+    file_id %= len(midi_corpus_list)
     score = m21.converter.parse(midi_corpus_list[file_id])
     return score[0]
 
-c = load_midi_corpus()
-f = load_midfile(5, c)
 
-f.highestTime
+corpus = load_midi_corpus()
+raw_loop = load_midfile(33, corpus)
+raw_loop.timeSignature = m21.meter.TimeSignature('4/4')
+raw_loop.makeNotation(inPlace=True)
+clean_loop = m21.stream.Stream()
+last_chord = m21.chord.Chord()
+for c in raw_loop.flat.recurse().getElementsByClass('Chord'):
+    if c.pitches != last_chord.pitches:
+        print c.offset, c.duration
+        clean_loop.insert(c.offset, c.__deepcopy__())
+    last_chord = c
+clean_loop.show('text')
 
-f.timeSignature = m21.meter.TimeSignature('4/4')
-f.makeMeasures(inPlace=True)
-f.makeBeams(inPlace=True)
-f.makeNotation(inPlace=True)
-f.show('midi')
+
+for i in range(len(clean_loop)):
+    print i
+    if i < (len(clean_loop) - 1):
+        print 'off', clean_loop[i].offset, clean_loop[i].duration
+        dur = m21.duration.Duration(clean_loop[i + 1].offset - clean_loop[i].offset)
+        print 'dur', dur
+        clean_loop[i].duration = dur
+        print 'off', clean_loop[i].offset, clean_loop[i].duration
+    elif i == (len(clean_loop) - 1):
+        print 'off', clean_loop[i].offset, clean_loop[i].duration
+        dur = m21.duration.Duration(raw_loop.flat.highestTime - clean_loop[i].offset)
+        # clean_loop[i].duration = m21.duration.Duration(raw_loop.flat.highestTime - clean_loop.offset)
+        clean_loop[i].duration = dur
+        print 'off', clean_loop[i].offset, clean_loop[i].duration
+clean_loop.makeNotation(inPlace=True)
+
+clean_loop.show()
 
 
-
-"""
-def load_midfile2(file_id, midi_corpus_list=load_midi_corpus()):
-    file_id = file_id % len(midi_corpus_list)
-    mf = m21.midi.MidiFile()
-    mf.open(midi_corpus_list[file_id])
-    mf.read()
-    s = m21.midi.translate.midiFileToStream(mf)
-    return s
-"""
-
-# Now we need a way to properly quantise all the midi file
-
-chord_density = GSAPI.create_FloatParameter()
-COMPUTE_NEW = gsapi.PARAMETER
-
-def change_chord_density(slider_value):
-
-DEF COMPUTE_NEW(TOGGLEvALUE)
-    changePattern
-
-def changePattern(GSPattern)current_melodia):
-
-    music12Obj = current_meliody.tom21()
-
-    // transform music12Obj
-    CHORD_DENSITY
-
-    GSPattern = music21Obj.toGSP()
-
-    return GSPattern
 
