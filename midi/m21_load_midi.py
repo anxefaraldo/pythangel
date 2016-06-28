@@ -8,9 +8,9 @@ def load_midi_corpus(midi_corpus_location='/home/angel/Git/house-harmonic-filler
     midi_corpus_list = os.listdir(midi_corpus_location)
     for anyfile in midi_corpus_list:
         if ".mid" not in anyfile:
-            midi_corpus_list.remove(anyfile)
-        else:
-            midi_corpus_list[midi_corpus_list.index(anyfile)] = midi_corpus_location + '/' + anyfile
+            midi_corpus_list.remove(midi_corpus_list[midi_corpus_list.index(anyfile)])
+    for i in range(len(midi_corpus_list)):
+        midi_corpus_list[i] = midi_corpus_location + '/' + midi_corpus_list[i]
     return midi_corpus_list
 
 
@@ -47,6 +47,22 @@ def force_4_bar(m21_stream):
         return m21_stream
 
 
+def base_transposition(m21_stream):
+    first_chord = m21_stream.flat.getElementsByClass('Chord')[0]
+    root = first_chord.root().pitchClass
+    octave = first_chord.root().octave
+    print root, octave
+    mode = first_chord.quality
+    transposition = (0 - root) + (4 - octave) * 12
+    print transposition
+    key = 'C'
+    if mode == 'minor':
+        key = key.lower()
+    elif mode == 'major':
+        key = key.upper()
+    m21_stream.insert(0, m21.key.Key(key))
+    return m21_stream.transpose(transposition)
+
 # Actions:
 
 if platform == 'darwin':
@@ -54,9 +70,23 @@ if platform == 'darwin':
 else:
     corpus = load_midi_corpus('/home/angel/Git/house-harmonic-filler/corpus')
 
-
-prog = force_4_bar(extract_chords(load_midfile((1, corpus))))
+rawp = load_midfile(i, corpus)
+prog = extract_chords(rawp)
+prog = base_transposition(prog)
+prog = force_4_bar(prog)
 prog.show()
 
+force_4_bar(base_transposition(extract_chords(load_midfile(i, corpus)))).show()
 
 
+
+"""
+Make a simple decission tree to determine the key of bassline loops.
+
+a) count number of bars, and make sure they are complete.
+b) look at the first note of the loop. this is the one with more weight.
+c) calculate possible modes for the whole loop, and per bar. produce output with all possible options.
+d) also look at repeated and long notes. Assign them extra weight. Have a look at Narmour?
+
+
+"""
