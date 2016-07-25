@@ -1,7 +1,6 @@
-from math import ceil
+import math
 import music21 as m21
 import os
-from sys import platform
 
 
 def load_midi_corpus(midi_corpus_location='/home/angel/Git/house-harmonic-filler/corpus'):
@@ -33,7 +32,7 @@ def extract_chords(m21_stream):
         if i < (len(new_stream) - 1):
             new_stream[i].duration = m21.duration.Duration(new_stream[i + 1].offset - new_stream[i].offset)
         elif i == (len(new_stream) - 1):
-            new_stream[i].duration = m21.duration.Duration(ceil(m21_stream.highestTime) - new_stream[i].offset)
+            new_stream[i].duration = m21.duration.Duration(math.ceil(m21_stream.highestTime) - new_stream[i].offset)
     return new_stream
 
 
@@ -63,36 +62,24 @@ def base_transposition(m21_stream):
     m21_stream.insert(0, m21.key.Key(key))
     return m21_stream.transpose(transposition)
 
-# Actions:
-# /Users/angel/Desktop/bass2d/corpus
-if platform == 'darwin':
-    corpus = load_midi_corpus('/Users/angel/Git/house-harmonic-filler/corpus')
-else:
-    corpus = load_midi_corpus('/home/angel/Git/house-harmonic-filler/corpus')
 
-rawp = load_midfile(i, corpus)
-prog = extract_chords(rawp)
-prog = base_transposition(prog)
-prog = force_4_bar(prog)
-prog.show()
-
-force_4_bar(base_transposition(extract_chords(load_midfile(i, corpus)))).show()
+def complete_bar_with_rest(my_stream):
+    if my_stream.quarterLengthFloat % 2.0 == 0.0:
+        return my_stream
+    else:
+        add_rest = m21.note.Rest()
+        add_rest.quarterLengthFloat = math.fabs(2.00**(my_stream.quarterLengthFloat//2.0) - my_stream.quarterLengthFloat)
+        print add_rest.quarterLengthFloat
+        my_stream.append(add_rest)
+        return my_stream
 
 
-corpus = load_midi_corpus('/Users/angel/Desktop/bass2d/corpus')
-
-
-
-"""
-Make a simple decission tree to determine the key of bassline loops.
-
-a) count number of bars, and make ure they are complete.
-b) look at the first note of the loop. this is the one with more weight.
-c) calculate possible modes for the whole loop, and per bar. produce output with all possible options.
-d) also look at repeated and long notes. Assign them extra weight. Have a look at Narmour?
-
-
-"""
-
-for n in f.getElementsByClass('Note'):
-    print n.offset, n.p, n.quarterLength
+def replace_time_signature(my_stream):
+    if my_stream.quarterLengthFloat % 2.0 == 0.0:
+        return my_stream
+    else:
+        add_rest = m21.note.Rest()
+        add_rest.quarterLengthFloat = math.fabs(2.0**(my_stream.quarterLengthFloat//2.0) - my_stream.quarterLengthFloat)
+        print add_rest.quarterLengthFloat
+        my_stream.append(add_rest)
+        return my_stream
