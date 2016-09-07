@@ -1,2 +1,12 @@
 .idea/
 *.pyc
+*/.DS_Store
+*.xml
+
+music/improviser-0.8.6.3/.DS_Store
+
+music/python-musical/.DS_Store
+
+music/python-musical/musical/.DS_Store
+
+music/pyknon/.DS_Store
