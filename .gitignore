@@ -1,12 +1,7 @@
-.idea/
+.idea/*
 *.pyc
 */.DS_Store
 *.xml
+*.wav
 
-music/improviser-0.8.6.3/.DS_Store
-
-music/python-musical/.DS_Store
-
-music/python-musical/musical/.DS_Store
-
-music/pyknon/.DS_Store
+*.xml
