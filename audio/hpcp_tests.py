@@ -1,6 +1,5 @@
 import pyo
 from random import randint
-from glob import glob as g
 from math import pow
 from numpy import divide
 
@@ -10,16 +9,16 @@ def midi2freq(midi_note):
     return pow(1.059463094359293, midi_note-69) * 440.0
 
 
-def rand_sine_mixture(server=pyo.Server().boot(),
-                      n_sines=3,
-                      min_freq=100,
-                      max_freq=1000,
-                      duration=5,
-                      filename='sinetest.wav'):
-    """Creates an audio file with a mixture of sine waves in the specified frequency range"""
+def randsinemix(server=pyo.Server().boot(), n_sines=3, min_freq=100,
+                max_freq=1000, duration=5, filename='sinetest.wav'):
+    """
+    Creates an audio file with a mixture of sine
+    tones in the specified frequency range.
+    """
     server.reinit(sr=44100, nchnls=1, duplex=0, audio='offline')
     server.recordOptions(dur=duration, filename=filename)
-    env = pyo.Adsr(attack=0.01, decay=0, sustain=1, release=0.01, dur=5, mul=1.00 / n_sines)
+    env = pyo.Adsr(attack=0.01, decay=0, sustain=1,
+                   release=0.01, dur=5, mul=1.0 / n_sines)
     sines = []
     freqs = []
     for sine in range(n_sines):
@@ -31,16 +30,16 @@ def rand_sine_mixture(server=pyo.Server().boot(),
     return freqs
 
 
-def rand_sine_tempered(server=pyo.Server().boot(),
-                       n_sines=3,
-                       min_note=60, # 21
-                       max_note=72, # 127
-                       duration=5,
-                       filename='sinetest.wav'):
-    """Creates an audio file with a mixture of tempered sine waves in the specified MIDI note range"""
-    server.reinit(sr=44100, nchnls=1, duplex=0, audio='offline')
+def rand_sine_tempered(server=pyo.Server().boot(), n_sines=3, min_note=21,
+                       max_note=127, duration=5, filename='sinetest.wav'):
+    """
+    Creates an audio file with a mixture of tempered
+    sine tones in the specified MIDI note range.
+    """
+    server.reinit(sr=44100, nchnls=2, duplex=1, audio='jack')
     server.recordOptions(dur=duration, filename=filename)
-    env = pyo.Adsr(attack=0.01, decay=0, sustain=1, release=0.01, dur=5, mul=1.00 / n_sines)
+    env = pyo.Adsr(attack=0.01, decay=0, sustain=1, release=0.01,
+                   dur=5, mul=1.00 / n_sines)
     sines = []
     freqs = []
     for i in range(n_sines):
@@ -53,19 +52,18 @@ def rand_sine_tempered(server=pyo.Server().boot(),
 
 
 def notes2pcp(list_of_notes):
-    """Returns a PCP vector of size 12 with normalized peaks"""
+    """Returns a PCP vector of size 12 with normalized peaks."""
     pcp = 12 * [0]
     for item in list_of_notes:
         pcp[item % 12] += 1.0
     return divide(pcp, max(pcp))
 
 
-
 if __name__ == "__main__":
 
     from argparse import ArgumentParser
 
-    parser = ArgumentParser(description="generate tuned sine-tone mixtures to test hpcp")
+    parser = ArgumentParser(description="Generates tuned sine-tone mixtures")
     parser.add_argument("--filepath", help="path to write files to")
     args = parser.parse_args()
 
