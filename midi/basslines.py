@@ -1,14 +1,27 @@
 from fm21 import *
-from sys import platform
+
+from math import ceil
+import music21 as m21
+import os
+
+def load_midi_corpus(midi_corpus_location='/Users/angelosx/Insync/midi/DEEPHOUSE/Delectable Records - DeepHouse Midi Basslines'):
+    midi_corpus_list = os.listdir(midi_corpus_location)
+    for anyfile in midi_corpus_list:
+        if ".mid" not in anyfile:
+            midi_corpus_list.remove(midi_corpus_list[midi_corpus_list.index(anyfile)])
+    for i in range(len(midi_corpus_list)):
+        midi_corpus_list[i] = midi_corpus_location + '/' + midi_corpus_list[i]
+    return midi_corpus_list
 
 
-if platform == 'darwin':
-    corpus = load_midi_corpus('/Users/angel/Desktop/bass2d/corpus')
-else:
-    corpus = load_midi_corpus('/home/angel/Git/house-harmonic-filler/corpus')
+def load_midfile(file_id, midi_corpus_list):
+    file_id %= len(midi_corpus_list)
+    score = m21.converter.parse(midi_corpus_list[file_id])
+    return score[0]
 
-
-f = load_midfile(0, corpus)
+corpus = load_midi_corpus()
+print corpus
+# f = load_midfile(0, corpus)
 
 """
 Make a simple decission tree to determine the key of bassline loops.
