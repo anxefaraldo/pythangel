@@ -1,7 +1,8 @@
 import os
 import sys
 from scipy.io import wavfile
-from scikits.samplerate import resample
+# from scikits.samplerate import resample
+from samplerate import resample
 import numpy as np
 
 
@@ -30,7 +31,7 @@ try:
             else:
                 label = (key_indicator - 1) / 2
             """
-            semitones = 12 # should be made interactive!!!!
+            semitones = 12  # should be made interactive!!!!
             print '\n', track
             # print 'Label:', label
             print 'Sample Rate:', sr
@@ -41,7 +42,7 @@ try:
             print 'New duration:', new_duration, 'secs.'
             new_waveform = np.array(resample(waveform, ratio, "sinc_fastest"), dtype="int16")
             # write resampled file to disk at the original sample rate:
-            wavfile.write(track,  sr, new_waveform)
+            wavfile.write("TRANSPOSED_" + track,  sr, new_waveform)
 
     print '\nDone transposing files.\n'
 

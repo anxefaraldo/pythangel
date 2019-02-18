@@ -15,7 +15,7 @@ try:
              dur = length_wav(track)
              durations.append(dur)
 
-    final_duration = 400# np.max(durations) * 2
+    final_duration = 300  # np.max(durations) * 2
 
     for track in tracks:
         if '.wav' in track:
