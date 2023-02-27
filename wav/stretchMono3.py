@@ -13,7 +13,7 @@ try:
             dur = length_wav(track)
             durations.append(dur)
 
-    final_duration = 60 * 15
+    final_duration = 197 # 60 * 15
 
     for track in tracks:
         if '.wav' in track:
